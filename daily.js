@@ -7,7 +7,7 @@ const cleanupFolders = require("./utils/deleteFolders.js");
 
 const fs = require("fs").promises;
 
-const INPUT_FILE = "RecordList.csv";
+const INPUT_FILE = "RecordList20260613.csv"; // <- here
 
 async function main() {
   const input_data = await fs.readFile(INPUT_FILE, "utf-8");
@@ -18,11 +18,11 @@ async function main() {
   // once ids
   await fetchPermitData("daily_permits_record_id.json");
   await cleanJSONinFolder("permits", "cleaned_permits");
-  await uploadFolder("cleaned_permits");
-  await cleanupFolders(["cleaned_permits", "permits"]);
+  // await uploadFolder("cleaned_permits");
+  // await cleanupFolders(["cleaned_permits", "permits"]);
 
-  await fs.rm("daily_permits_record_id.json", { force: true });
-  await fs.rm("daily_permits.json", { force: true });
+  // await fs.rm("daily_permits_record_id.json", { force: true });
+  // await fs.rm("daily_permits.json", { force: true });
 }
 
 main();

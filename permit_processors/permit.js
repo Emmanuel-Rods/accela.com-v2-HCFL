@@ -4,6 +4,8 @@ const parsePermits = require("./permit_parser.js");
 const processCookies = require("../utils/cookie_parser.js");
 const getInspection = require("../inspection_processors/inspection.js");
 
+const AGENCY = "HCFL";
+
 // Ensure the permits directory exists
 if (!fsSync.existsSync("permits")) {
   fsSync.mkdirSync("permits");
@@ -72,7 +74,7 @@ async function fetchPermitData(inputfile) {
           const [capID1, capID2, capID3] = parts;
 
           // --- Create URL & Fetch ---
-          const url = `https://aca-prod.accela.com/MECKLENBURG/Cap/CapDetail.aspx?Module=Building&TabName=Building&capID1=${capID1}&capID2=${capID2}&capID3=${capID3}`;
+          const url = `https://aca-prod.accela.com/${AGENCY}/Cap/CapDetail.aspx?Module=Building&TabName=Building&capID1=${capID1}&capID2=${capID2}&capID3=${capID3}`;
           console.log(`Fetching data for Record ID: ${recordId}`);
 
           const response = await fetch(url);

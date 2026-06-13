@@ -4,7 +4,9 @@ function parseAccelaRedirect(inputStr) {
   const match = inputStr.match(/pageRedirect\|\|([^|]+)\|/);
 
   if (!match) {
-    throw new Error("No redirect link found in the input string.");
+    console.error("No redirect link found in the input string.");
+    //if no match then it might be multple resuts
+    return null;
   }
 
   // 2. Decode the extracted URL

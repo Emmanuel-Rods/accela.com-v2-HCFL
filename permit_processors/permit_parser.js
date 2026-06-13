@@ -1,4 +1,5 @@
 const cheerio = require("cheerio");
+const parseApplicationInformation = require("./permit_parser_utliities/application_infomation_parser.js");
 
 // Helper function to clean up messy HTML text (removes extra spaces, newlines, etc.)
 const cleanText = (text) => {
@@ -139,33 +140,7 @@ function parsePermits(htmlString, recordId) {
 
   // 5. Application Information (ASI - Key/Value pairs grouped by category)
   result.applicationInformation = {};
-  let currentCategory = "General";
-
-  $("#trASIList .MoreDetail_BlockContent > div").each((i, el) => {
-    const $el = $(el);
-    // Category headers
-    if ($el.hasClass("MoreDetail_ItemTitle")) {
-      currentCategory = cleanText($el.text());
-      result.applicationInformation[currentCategory] = {};
-    }
-    // 2-Column layout items
-    else if ($el.hasClass("ACA_TabRow")) {
-      $el.find(".ASIReview2Columns").each((j, col) => {
-        let key = cleanText($(col).find(".ACA_SmLabelBolder").text()).replace(
-          /:$/,
-          "",
-        );
-        let val = cleanText($(col).find(".ACA_SmLabel").text());
-        if (key) result.applicationInformation[currentCategory][key] = val;
-      });
-    }
-    // Vertical layout items
-    else if ($el.hasClass("MoreDetail_ItemCol1")) {
-      let key = cleanText($el.text()).replace(/:$/, "");
-      let val = cleanText($el.next(".MoreDetail_ItemCol2").text());
-      if (key) result.applicationInformation[currentCategory][key] = val;
-    }
-  });
+  result.applicationInformation = parseApplicationInformation(htmlString);
 
   // 6. Application Information Tables (ASIT - Grids/Tables)
   result.applicationInformationTables = {};
