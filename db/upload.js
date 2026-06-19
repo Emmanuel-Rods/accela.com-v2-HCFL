@@ -7,7 +7,8 @@ const SUPABASE_URL = "https://dddsaythhlflyzuxcdha.supabase.co";
 const SUPABASE_KEY = "";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const TABLE_NAME = "scraper_test"; //change this later
+const TABLE_NAME = "scraper_test";
+// const TABLE_NAME = "fl_hillsborough_permits";
 
 const BATCH_SIZE = 100;
 
@@ -49,22 +50,21 @@ async function uploadFolder(FOLDER_PATH) {
         // --- 2. CLEAN PARSING ---
         const permitBlock = rawJson.recordInfo || {};
 
-        const pId = permitBlock.recordId;
         const pNum = permitBlock["Record Number"];
         const status = permitBlock.recordStatus;
 
         // Safety check: Skip files missing the key identifier
-        if (!pId) {
+        if (!pNum) {
           console.log(
-            `Skipping ${filename}: No PermitId found in the 'permit' block.`,
+            `Skipping ${filename}: No 'Record Number' found in the recordInfo block.`,
           );
           continue;
         }
 
         // --- 3. BUILD THE ROW ---
         batch.push({
-          permit_id: pId,
-          permit_number: pNum ? pNum : "UNKNOWN",
+          permit_id: pNum,
+          permit_number: pNum,
           status: status ? status : "UNKNOWN",
           permit_data: rawJson,
         });
