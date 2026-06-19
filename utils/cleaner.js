@@ -2,63 +2,109 @@ const fs = require("fs").promises; // Use the promises version of fs
 const path = require("path");
 
 async function cleanJSONinFolder(inputFolder, outputFolder) {
+  // Ensure output directory exists (equivalent to exist_ok=True, parents=True)
+  await fs.mkdir(outputFolder, { recursive: true });
+
+  // Read directory and filter for .json files
+  let files;
   try {
-    // 1. Ensure output directory exists (await)
-    await fs.mkdir(outputFolder, { recursive: true });
-
-    // 2. Read directory (await)
-    const allFiles = await fs.readdir(inputFolder);
-    const jsonFiles = allFiles.filter((file) => file.endsWith(".json"));
-
-    console.log(`Starting simple cleanup on ${jsonFiles.length} files...`);
-
-    // 3. Process files in a loop
-    // Note: Use a for...of loop with await to ensure they process correctly
-    for (const filename of jsonFiles) {
-      const filePath = path.join(inputFolder, filename);
-
-      try {
-        const rawData = await fs.readFile(filePath, "utf-8");
-        let data = JSON.parse(rawData);
-
-        // --- TARGET 1: Drop empty applicationInformation ---
-        delete data["applicationInformation"];
-
-        // --- TARGET 2: Drop TOWNHOUSE ADDRESSES ---
-        if (data.applicationInformationTables) {
-          delete data.applicationInformationTables["TOWNHOUSE ADDRESSES"];
-        }
-
-        // --- TARGET 3: Drop legal sentence ---
-        const contractors =
-          data.applicationInformationTables?.["CONTRACTOR INFORMATION"];
-        if (Array.isArray(contractors)) {
-          const legalSentence =
-            "By Selecting Yes, You are certifying that this information is correct";
-          contractors.forEach((contractor) => {
-            delete contractor[legalSentence];
-          });
-        }
-
-        // 4. Save file (await)
-        const outputFilePath = path.join(outputFolder, filename);
-        await fs.writeFile(
-          outputFilePath,
-          JSON.stringify(data, null, 2),
-          "utf-8",
-        );
-      } catch (err) {
-        console.error(`Error processing ${filename}: ${err.message}`);
-      }
-    }
-
-    console.log("-".repeat(40));
-    console.log("CLEANUP COMPLETE");
-    return true; // Return something to signal completion
+    files = await fs.readdir(inputFolder);
   } catch (err) {
-    console.error(`Critical Error: ${err.message}`);
-    throw err;
+    console.error(`Failed to read input directory: ${err.message}`);
+    return;
   }
+
+  const jsonFiles = files.filter(
+    (file) => path.extname(file).toLowerCase() === ".json",
+  );
+  console.log(
+    `Starting Hillsborough extraction for ${jsonFiles.length} files...\n`,
+  );
+
+  let processedCount = 0;
+  const errorLog = [];
+
+  // --- 1. THE "DIRECT COPY" TARGETS ---
+  const DIRECT_COPY_KEYS = [
+    "recordInfo",
+    "workLocation",
+    "applicant",
+    "licensedProfessionals",
+    "projectDescription",
+    "owner",
+    "relatedContacts",
+    "parcelInformation",
+    "inspection",
+  ];
+
+  for (const filename of jsonFiles) {
+    const filepath = path.join(inputFolder, filename);
+    try {
+      // Read and parse the JSON file
+      const rawData = await fs.readFile(filepath, "utf-8");
+      const data = JSON.parse(rawData);
+
+      const cleanedData = {};
+
+      // --- STEP 1: Execute Direct Copy ---
+      for (const key of DIRECT_COPY_KEYS) {
+        if (data.hasOwnProperty(key)) {
+          cleanedData[key] = data[key];
+        }
+      }
+
+      // --- STEP 2: Execute Surgical Snipe on 'applicationInformation' ---
+      const appInfoSource = data.applicationInformation || {};
+      const newAppInfo = {};
+
+      // Snipe A: Keep General Project Info as-is
+      if (appInfoSource["GENERAL PROJECT INFORMATION"]) {
+        newAppInfo["GENERAL PROJECT INFORMATION"] =
+          appInfoSource["GENERAL PROJECT INFORMATION"];
+      }
+
+      // Snipe B: Dig into 'PROJECT DETAILS' and grab the money
+      // Using ?? null ensures that if the key doesn't exist, it defaults to null (just like Python's .get())
+      const projectDetails = appInfoSource["PROJECT DETAILS"] || {};
+      newAppInfo["Total Project Value"] =
+        projectDetails["Total Project Value"] ?? null;
+
+      // Snipe C: Dig into 'GIS ATTRIBUTES' and grab the PIN
+      const gisAttributes = appInfoSource["GIS ATTRIBUTES"] || {};
+      newAppInfo["PIN"] = gisAttributes["PIN"] ?? null;
+
+      // Assign the clean, 3-item app info block to our final payload
+      cleanedData["applicationInformation"] = newAppInfo;
+
+      // --- STEP 3: Save the freshly cleaned file ---
+      const outputFilepath = path.join(outputFolder, filename);
+      // JSON.stringify(data, null, 2) is equivalent to json.dump(..., indent=2)
+      await fs.writeFile(
+        outputFilepath,
+        JSON.stringify(cleanedData, null, 2),
+        "utf-8",
+      );
+
+      processedCount++;
+    } catch (e) {
+      errorLog.push(`[${filename}] Failed to process: ${e.message}`);
+    }
+  }
+
+  // --- Terminal Summary ---
+  console.log("-".repeat(40));
+  console.log(
+    `CLEANUP COMPLETE: Processed ${processedCount} out of ${jsonFiles.length} files.`,
+  );
+
+  if (errorLog.length > 0) {
+    console.log("\n[WARNING] The following files encountered errors:");
+    for (const error of errorLog) {
+      console.log(`  -> ${error}`);
+    }
+  }
+
+  console.log(`\nCleaned JSONs saved in: ${outputFolder}`);
 }
 
 module.exports = cleanJSONinFolder;
