@@ -29,6 +29,7 @@ async function getRecordId(recordNumber) {
     "utf-8",
   ); //!important
   const BasePayload = buildBasicPayload(html); // builds the skeleton
+  BasePayload["ctl00$PlaceHolderMain$txtEndDate"] = ""; // set enddate to zero
   const payload = recordIDPayloadBuilder(BasePayload, recordNumber);
 
   // require("fs").writeFileSync(
