@@ -39,7 +39,7 @@ async function getRecordId(recordNumber) {
 
   const redirect = await postToServer(TARGET_URL, payload, cookie_string);
 
-  require("fs").writeFileSync("reirect.html", redirect);
+  // require("fs").writeFileSync("reirect.html", redirect);
 
   let parsed = parseAccelaRedirect(redirect);
   // if  there are mulitple results ids then the above function doesnt work
