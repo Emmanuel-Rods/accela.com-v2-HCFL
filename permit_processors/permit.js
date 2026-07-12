@@ -3,6 +3,8 @@ const fsSync = require("fs");
 const parsePermits = require("./permit_parser.js");
 const processCookies = require("../utils/cookie_parser.js");
 const getInspection = require("../inspection_processors/inspection.js");
+const { hash } = require("../utils/hashes/create.hash.js");
+const { cleanJSON } = require("../utils/cleaner.js");
 
 const AGENCY = "HCFL";
 
@@ -40,7 +42,7 @@ async function fetchPermitData(inputfile) {
     const records = JSON.parse(fileContent);
 
     // 2. Split records into batches of 3
-    const BATCH_SIZE = 3;
+    const BATCH_SIZE = 2;
     const batches = chunkArray(records, BATCH_SIZE);
 
     console.log(
@@ -94,11 +96,15 @@ async function fetchPermitData(inputfile) {
           const permit = parsePermits(htmlContent, recordId);
           const inspection = await getInspection(url, htmlContent, cookies);
           const data = { ...permit, inspection };
-
+          // cleaning
+          const cleanedData = cleanJSON(data);
+          // hashing
+          const permit_hash = hash(cleanedData);
+          const final = { permit_data: cleanedData, permit_hash: permit_hash };
           // --- Save to File ---
           await fs.writeFile(
             `permits/${recordNumber}.json`,
-            JSON.stringify(data, null, 2),
+            JSON.stringify(final, null, 2),
             "utf8",
           );
         } catch (error) {
