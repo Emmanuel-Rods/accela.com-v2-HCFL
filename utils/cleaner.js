@@ -107,4 +107,55 @@ async function cleanJSONinFolder(inputFolder, outputFolder) {
   console.log(`\nCleaned JSONs saved in: ${outputFolder}`);
 }
 
-module.exports = cleanJSONinFolder;
+function cleanJSON(rawJSON) {
+  // --- 1. THE "DIRECT COPY" TARGETS ---
+  const DIRECT_COPY_KEYS = [
+    "recordInfo",
+    "workLocation",
+    "applicant",
+    "licensedProfessionals",
+    "projectDescription",
+    "owner",
+    "relatedContacts",
+    "parcelInformation",
+    "inspection",
+  ];
+
+  const data = rawJSON;
+
+  const cleanedData = {};
+
+  // --- STEP 1: Execute Direct Copy ---
+  for (const key of DIRECT_COPY_KEYS) {
+    if (data.hasOwnProperty(key)) {
+      cleanedData[key] = data[key];
+    }
+  }
+
+  // --- STEP 2: Execute Surgical Snipe on 'applicationInformation' ---
+  const appInfoSource = data.applicationInformation || {};
+  const newAppInfo = {};
+
+  // Snipe A: Keep General Project Info as-is
+  if (appInfoSource["GENERAL PROJECT INFORMATION"]) {
+    newAppInfo["GENERAL PROJECT INFORMATION"] =
+      appInfoSource["GENERAL PROJECT INFORMATION"];
+  }
+
+  // Snipe B: Dig into 'PROJECT DETAILS' and grab the money
+  // Using ?? null ensures that if the key doesn't exist, it defaults to null (just like Python's .get())
+  const projectDetails = appInfoSource["PROJECT DETAILS"] || {};
+  newAppInfo["Total Project Value"] =
+    projectDetails["Total Project Value"] ?? null;
+
+  // Snipe C: Dig into 'GIS ATTRIBUTES' and grab the PIN
+  const gisAttributes = appInfoSource["GIS ATTRIBUTES"] || {};
+  newAppInfo["PIN"] = gisAttributes["PIN"] ?? null;
+
+  // Assign the clean, 3-item app info block to our final payload
+  cleanedData["applicationInformation"] = newAppInfo;
+
+  return cleanedData;
+}
+
+module.exports = { cleanJSON, cleanJSONinFolder };
