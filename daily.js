@@ -5,9 +5,13 @@ const uploadFolder = require("./db/upload.js");
 const cleanupFolders = require("./utils/deleteFolders.js");
 const { downloadCSV } = require("./download_csv/main.js");
 
-const fs = require("fs").promises;
+const {
+  dateOffset,
+  requiredStatuses,
+  requiredSecondaryData,
+} = require("./config.js");
 
-const dateOffset = 1;
+const fs = require("fs").promises;
 
 async function main() {
   const csv = await downloadCSV(dateOffset);
@@ -20,12 +24,20 @@ async function main() {
   const input_data = await fs.readFile(INPUT_FILE, "utf-8");
   const dailyData = parseCSVToJSON(input_data);
 
-  if (dailyData.length === 0) {
-    console.log("No Applications");
+  // filtering by applications
+  const filteredApplications = dailyData.filter((app) =>
+    requiredSecondaryData.includes(app["Record Type"]),
+  );
+
+  if (filteredApplications.length === 0) {
+    console.log("No Applications left for processing after filtering");
     return;
   }
 
-  await fs.writeFile("daily_permits.json", JSON.stringify(dailyData, null, 2));
+  await fs.writeFile(
+    "daily_permits.json",
+    JSON.stringify(filteredApplications, null, 2),
+  );
   //need to get the ids
   await processRecords("daily_permits.json", "daily_permits_record_id.json");
   //once ids
