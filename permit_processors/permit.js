@@ -118,7 +118,7 @@ async function fetchPermitData(inputfile) {
 
       // 5. Wait for all 3 records in the current batch to finish before moving on
       await Promise.all(batchPromises);
-      await new Promise((r) => setTimeout(r, 1000)); // 1 second delay
+      await new Promise((r) => setTimeout(r, 2000)); // 1 second delay
     }
 
     console.log("\nFinished processing all records.");
