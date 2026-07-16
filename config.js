@@ -13,7 +13,7 @@ const requiredSecondaryData = [
 ];
 
 //status that need be updated
-const updateStatuses = ["Complete", "Awaiting Client Reply"];
+const updateStatuses = ["Awaiting Client Reply", "In Process"];
 
 // exports
 module.exports = {
