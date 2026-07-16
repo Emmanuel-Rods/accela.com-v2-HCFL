@@ -3,7 +3,7 @@
 const dateOffset = 1; // 1 = yesterday
 
 // statuses that need to pulled using daily.js
-const requiredStatuses = ["Issued", "Final"];
+const requiredStatuses = ["Issued", "Complete"];
 
 // permit types
 const requiredSecondaryData = [
@@ -13,7 +13,7 @@ const requiredSecondaryData = [
 ];
 
 //status that need be updated
-const updateStatuses = ["Awaiting Client Reply", "In Process"];
+const updateStatuses = ["Issued","Awaiting Client Reply", "In Process","Complete"];
 
 // exports
 module.exports = {
