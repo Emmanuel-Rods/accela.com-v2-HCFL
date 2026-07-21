@@ -24,8 +24,13 @@ async function main() {
   const input_data = await fs.readFile(INPUT_FILE, "utf-8");
   const dailyData = parseCSVToJSON(input_data);
 
+  // filter out TMP permits by checking if the "Record Number" contains "TMP"
+  const nonTmpData = dailyData.filter(
+    (app) => !app["Record Number"].includes("TMP"),
+  );
+
   // filtering by applications
-  const filteredApplications = dailyData.filter((app) =>
+  const filteredApplications = nonTmpData.filter((app) =>
     requiredSecondaryData.includes(app["Record Type"]),
   );
 
