@@ -146,7 +146,9 @@ function cleanJSON(rawJSON) {
   // Using ?? null ensures that if the key doesn't exist, it defaults to null (just like Python's .get())
   const projectDetails = appInfoSource["PROJECT DETAILS"] || {};
   newAppInfo["Total Project Value"] =
-    projectDetails["Total Project Value"] ?? null;
+    projectDetails["Total Project Value"] ??
+    projectDetails["Job Value"] ??
+    null;
 
   // Snipe C: Dig into 'GIS ATTRIBUTES' and grab the PIN
   const gisAttributes = appInfoSource["GIS ATTRIBUTES"] || {};
