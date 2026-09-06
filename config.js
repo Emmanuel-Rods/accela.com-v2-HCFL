@@ -7,8 +7,8 @@ const requiredStatuses = ["Issued", "Complete", "In Process", "Awaiting Client R
 
 // permit types
 const requiredSecondaryData = [
-  "Residential New Construction and Additions",
-  "Residential Building Alterations (Renovations)",
+  // "Residential New Construction and Additions",
+  // "Residential Building Alterations (Renovations)",
   "Commercial New Construction and Additions",
 ];
 
