@@ -1,6 +1,6 @@
 // const base = ""; // No trailing slash
 
-const dateOffset = 1; // 1 = yesterday
+const dateOffset = 30; // 1 = yesterday
 
 // statuses that need to pulled using daily.js
 const requiredStatuses = ["Issued", "Complete", "In Process", "Awaiting Client Reply"];
