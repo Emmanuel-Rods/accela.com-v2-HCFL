@@ -1,14 +1,14 @@
 // const base = ""; // No trailing slash
 
-const dateOffset = 30; // 1 = yesterday
+const dateOffset = 1; // 1 = yesterday
 
 // statuses that need to pulled using daily.js
 const requiredStatuses = ["Issued", "Complete", "In Process", "Awaiting Client Reply"];
 
 // permit types
 const requiredSecondaryData = [
-  // "Residential New Construction and Additions",
-  // "Residential Building Alterations (Renovations)",
+  "Residential New Construction and Additions",
+  "Residential Building Alterations (Renovations)",
   "Commercial New Construction and Additions",
 ];
 
